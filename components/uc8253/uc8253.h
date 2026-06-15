@@ -3,7 +3,6 @@
 #include <vector>
 
 #include "esphome/components/display/display_buffer.h"
-#include "esphome/components/display/display_color_utils.h"
 #include "esphome/core/component.h"
 #include "esphome/core/gpio.h"
 
@@ -25,6 +24,9 @@ class UC8253 : public display::DisplayBuffer {
   void setup() override;
   void dump_config() override;
   void on_shutdown() override;
+  void update() override;
+
+  display::DisplayType get_display_type() override { return display::DisplayType::DISPLAY_TYPE_COLOR; }
 
   void set_model(UC8253Model model) { this->model_ = model; }
   void set_refresh_mode(UC8253RefreshMode refresh_mode) { this->refresh_mode_ = refresh_mode; }

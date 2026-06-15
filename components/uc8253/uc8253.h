@@ -3,6 +3,7 @@
 #include <vector>
 
 #include "esphome/components/display/display_buffer.h"
+#include "esphome/components/display/display_color_utils.h"
 #include "esphome/core/component.h"
 #include "esphome/core/gpio.h"
 

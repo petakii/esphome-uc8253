@@ -19,11 +19,10 @@ enum UC8253RefreshMode {
   UC8253_REFRESH_PARTIAL,
 };
 
-class UC8253 : public PollingComponent, public display::DisplayBuffer {
+class UC8253 : public Component, public display::DisplayBuffer {
  public:
   void setup() override;
   void dump_config() override;
-  void update() override;
   void on_shutdown() override;
 
   void set_model(UC8253Model model) { this->model_ = model; }

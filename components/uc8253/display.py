@@ -71,7 +71,7 @@ CONFIG_SCHEMA = (
 async def to_code(config):
     var = cg.new_Pvariable(config[CONF_ID])
 
-    await cg.register_component(var, config)
+    # Don't call cg.register_component() here - PollingComponent already handles this
     await display.register_display(var, config)
 
     cg.add(var.set_model(MODEL_ENUM[config[CONF_MODEL]]))

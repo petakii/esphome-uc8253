@@ -67,11 +67,6 @@ void UC8253::dump_config() {
   LOG_PIN("  Busy Pin: ", this->busy_pin_);
 }
 
-void UC8253::update() {
-  this->do_update_();
-  this->display();
-}
-
 void UC8253::on_shutdown() { this->deep_sleep_(); }
 
 int UC8253::get_width_internal() { return this->width_; }

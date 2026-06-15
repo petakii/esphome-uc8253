@@ -1,9 +1,9 @@
 #include "uc8253.h"
-
-#include "esphome/core/application.h"
-#include "esphome/core/hal.h"
-#include "esphome/core/helpers.h"
 #include "esphome/core/log.h"
+
+#ifdef USE_ARDUINO
+#include <Arduino.h>
+#endif
 
 namespace esphome {
 namespace uc8253 {
@@ -45,40 +45,42 @@ void UC8253::setup() {
   if (this->busy_pin_ != nullptr)
     this->busy_pin_->setup();
 
-  const size_t len = this->get_buffer_length();
+  const size_t len = this->get_buffer_length_();
   this->black_plane_.assign(len, 0xFF);
   this->color_plane_.assign(len, 0xFF);
 
   this->init_controller_();
-  this->display();
+  this->write_display_data_();
 }
 
 void UC8253::dump_config() {
   ESP_LOGCONFIG(TAG, "UC8253 E-Paper Display:");
   ESP_LOGCONFIG(TAG, "  Model: %s", this->model_ == UC8253_MODEL_3_7 ? "3.7\"" : "2.13\"");
   ESP_LOGCONFIG(TAG, "  Resolution: %ux%u", this->width_, this->height_);
-  ESP_LOGCONFIG(TAG, "  Refresh mode: %s", this->refresh_mode_ == UC8253_REFRESH_PARTIAL ? "partial" : "full");
-  ESP_LOGCONFIG(TAG, "  Full update every: %u", this->full_update_every_);
-  LOG_PIN("  CLK Pin: ", this->clk_pin_);
-  LOG_PIN("  MOSI Pin: ", this->mosi_pin_);
-  LOG_PIN("  CS Pin: ", this->cs_pin_);
-  LOG_PIN("  DC Pin: ", this->dc_pin_);
-  LOG_PIN("  Reset Pin: ", this->reset_pin_);
-  LOG_PIN("  Busy Pin: ", this->busy_pin_);
+  
+  if (this->clk_pin_ != nullptr) ESP_LOGCONFIG(TAG, "  CLK Pin: %s", this->clk_pin_->dump_summary().c_str());
+  if (this->mosi_pin_ != nullptr) ESP_LOGCONFIG(TAG, "  MOSI Pin: %s", this->mosi_pin_->dump_summary().c_str());
+  if (this->cs_pin_ != nullptr) ESP_LOGCONFIG(TAG, "  CS Pin: %s", this->cs_pin_->dump_summary().c_str());
+  if (this->dc_pin_ != nullptr) ESP_LOGCONFIG(TAG, "  DC Pin: %s", this->dc_pin_->dump_summary().c_str());
+  if (this->reset_pin_ != nullptr) ESP_LOGCONFIG(TAG, "  Reset Pin: %s", this->reset_pin_->dump_summary().c_str());
+  if (this->busy_pin_ != nullptr) ESP_LOGCONFIG(TAG, "  Busy Pin: %s", this->busy_pin_->dump_summary().c_str());
 }
 
 void UC8253::on_shutdown() { this->deep_sleep_(); }
 
-void UC8253::update() { this->display(); }
+void UC8253::update() { 
+  this->do_update_(); 
+  this->write_display_data_(); 
+}
 
 int UC8253::get_width_internal() { return this->width_; }
 int UC8253::get_height_internal() { return this->height_; }
 
-size_t UC8253::get_buffer_length() {
+size_t UC8253::get_buffer_length_() {
   return (static_cast<size_t>(this->width_) * this->height_ + 7u) / 8u;
 }
 
-void UC8253::draw_absolute_pixel_internal(int x, int y, Color color) {
+void UC8253::draw_absolute_pixel_internal(int x, int y, esphome::Color color) {
   if (x < 0 || y < 0 || x >= this->width_ || y >= this->height_)
     return;
 
@@ -102,7 +104,7 @@ void UC8253::draw_absolute_pixel_internal(int x, int y, Color color) {
   }
 }
 
-void UC8253::display() {
+void UC8253::write_display_data_() {
   if (this->refresh_mode_ == UC8253_REFRESH_PARTIAL && this->refresh_counter_ % this->full_update_every_ != 0) {
     this->send_command_(UC8253_CMD_VCOM_CDI);
     this->send_data_(0x17);
@@ -134,7 +136,6 @@ void UC8253::configure_model_() {
 
 void UC8253::init_controller_() {
   this->hardware_reset_();
-
   this->power_on_();
 
   this->send_command_(UC8253_CMD_PANEL_SETTING);
@@ -184,9 +185,7 @@ void UC8253::deep_sleep_() {
 }
 
 void UC8253::hardware_reset_() {
-  if (this->reset_pin_ == nullptr) {
-    return;
-  }
+  if (this->reset_pin_ == nullptr) return;
   this->reset_pin_->digital_write(true);
   delay(UC8253_RESET_PULSE_HIGH_MS);
   this->reset_pin_->digital_write(false);
@@ -196,21 +195,16 @@ void UC8253::hardware_reset_() {
 }
 
 void UC8253::wait_until_idle_(uint32_t timeout_ms) {
-  if (this->busy_pin_ == nullptr) {
-    return;
-  }
+  if (this->busy_pin_ == nullptr) return;
 
   const uint32_t start = millis();
   while (millis() - start < timeout_ms) {
     this->send_command_(UC8253_CMD_GET_STATUS);
     const bool busy_level = this->busy_pin_->digital_read();
     const bool busy = this->busy_active_high_ ? busy_level : !busy_level;
-    if (!busy) {
-      return;
-    }
+    if (!busy) return;
     delay(UC8253_BUSY_POLL_MS);
   }
-
   ESP_LOGW(TAG, "Timed out waiting for busy pin");
 }
 
@@ -242,6 +236,18 @@ void UC8253::spi_write_byte_(uint8_t value) {
     value <<= 1;
   }
   this->cs_pin_->digital_write(true);
+}
+
+void UC8253::set_plane_bit_(::std::vector<uint8_t> &plane, uint32_t idx, bool value) {
+  uint32_t byte_idx = idx / 8;
+  uint8_t bit_shift = 7 - (idx % 8);
+  if (byte_idx < plane.size()) {
+    if (value) {
+      plane[byte_idx] |= (1 << bit_shift);
+    } else {
+      plane[byte_idx] &= ~(1 << bit_shift);
+    }
+  }
 }
 
 }  // namespace uc8253

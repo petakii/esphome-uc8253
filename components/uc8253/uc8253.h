@@ -19,7 +19,7 @@ enum UC8253RefreshMode {
   UC8253_REFRESH_PARTIAL,
 };
 
-class UC8253 : public Component, public display::DisplayBuffer {
+class UC8253 : public display::DisplayBuffer {
  public:
   void setup() override;
   void dump_config() override;

@@ -3,6 +3,7 @@
 #include <vector>
 
 #include "esphome/components/display/display_buffer.h"
+#include "esphome/core/color.h"
 #include "esphome/core/component.h"
 #include "esphome/core/gpio.h"
 
@@ -47,7 +48,7 @@ class UC8253 : public display::DisplayBuffer {
   float get_setup_priority() const override { return setup_priority::PROCESSOR; }
 
  protected:
-  void draw_absolute_pixel_internal(int x, int y, display::Color color) override;
+  void draw_absolute_pixel_internal(int x, int y, Color color) override;
   size_t get_buffer_length() override;
   int get_width_internal() override;
   int get_height_internal() override;

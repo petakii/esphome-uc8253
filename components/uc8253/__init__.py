@@ -10,10 +10,7 @@ CONF_BUSY_ACTIVE_HIGH = "busy_active_high"
 CONF_LUT = "lut"
 CONF_COLOR_MODE = "color_mode"
 
-MODEL_OPTIONS = {
-    "3.7": {"width": 416, "height": 240, "has_color": True},
-    "2.13": {"width": 250, "height": 122, "has_color": True},
-}
+MODEL_OPTIONS = ("3.7", "2.13")
 
 REFRESH_MODES = ("full", "partial")
 COLOR_MODES = ("binary", "2color")
@@ -21,7 +18,7 @@ CODEOWNERS = ["@petakii"]
 
 
 def validate_model(value):
-    return cv.one_of(*MODEL_OPTIONS.keys(), lower=True)(value)
+    return cv.one_of(*MODEL_OPTIONS, lower=True)(value)
 
 
 def validate_refresh_mode(value):

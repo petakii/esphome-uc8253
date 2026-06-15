@@ -21,10 +21,10 @@ static const uint8_t UC8253_CMD_LUT = 0x20;
 static const uint8_t UC8253_CMD_RESOLUTION = 0x61;
 static const uint8_t UC8253_CMD_GET_STATUS = 0x71;
 static const uint8_t UC8253_CMD_VCOM_CDI = 0x50;
-static const uint32_t UC8253_RESET_HIGH_MS = 20;
-static const uint32_t UC8253_RESET_LOW_MS = 2;
+static const uint32_t UC8253_RESET_PULSE_HIGH_MS = 20;
+static const uint32_t UC8253_RESET_PULSE_LOW_MS = 2;
 static const uint32_t UC8253_BUSY_POLL_MS = 10;
-static const uint32_t UC8253_SOFT_SPI_HALF_CLOCK_US = 1;
+static const uint32_t UC8253_SOFT_SPI_HALF_PERIOD_US = 1;
 
 void UC8253::setup() {
   this->configure_model_();
@@ -191,11 +191,11 @@ void UC8253::hardware_reset_() {
     return;
   }
   this->reset_pin_->digital_write(true);
-  delay(UC8253_RESET_HIGH_MS);
+  delay(UC8253_RESET_PULSE_HIGH_MS);
   this->reset_pin_->digital_write(false);
-  delay(UC8253_RESET_LOW_MS);
+  delay(UC8253_RESET_PULSE_LOW_MS);
   this->reset_pin_->digital_write(true);
-  delay(UC8253_RESET_HIGH_MS);
+  delay(UC8253_RESET_PULSE_HIGH_MS);
 }
 
 void UC8253::wait_until_idle_(uint32_t timeout_ms) {
@@ -239,9 +239,9 @@ void UC8253::spi_write_byte_(uint8_t value) {
   for (uint8_t bit = 0; bit < 8; bit++) {
     this->clk_pin_->digital_write(false);
     this->mosi_pin_->digital_write((value & 0x80u) != 0);
-    delayMicroseconds(UC8253_SOFT_SPI_HALF_CLOCK_US);
+    delayMicroseconds(UC8253_SOFT_SPI_HALF_PERIOD_US);
     this->clk_pin_->digital_write(true);
-    delayMicroseconds(UC8253_SOFT_SPI_HALF_CLOCK_US);
+    delayMicroseconds(UC8253_SOFT_SPI_HALF_PERIOD_US);
     value <<= 1;
   }
   this->cs_pin_->digital_write(true);

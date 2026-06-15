@@ -27,8 +27,6 @@ from . import (
     validate_color_mode,
 )
 
-DEPENDENCIES = []
-
 uc8253_ns = cg.esphome_ns.namespace("uc8253")
 UC8253Model = uc8253_ns.enum("UC8253Model")
 UC8253RefreshMode = uc8253_ns.enum("UC8253RefreshMode")

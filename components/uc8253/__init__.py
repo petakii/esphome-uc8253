@@ -17,6 +17,7 @@ MODEL_OPTIONS = {
 
 REFRESH_MODES = ("full", "partial")
 COLOR_MODES = ("binary", "2color")
+CODEOWNERS = ["@petakii"]
 
 
 def validate_model(value):
@@ -25,9 +26,6 @@ def validate_model(value):
 
 def validate_refresh_mode(value):
     return cv.one_of(*REFRESH_MODES, lower=True)(value)
-
-
-CODEOWNERS = ["@petakii"]
 
 
 def validate_color_mode(value):

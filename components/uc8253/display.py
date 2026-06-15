@@ -30,7 +30,7 @@ from . import (
 uc8253_ns = cg.esphome_ns.namespace("uc8253")
 UC8253Model = uc8253_ns.enum("UC8253Model")
 UC8253RefreshMode = uc8253_ns.enum("UC8253RefreshMode")
-UC8253 = uc8253_ns.class_("UC8253", cg.PollingComponent, display.DisplayBuffer)
+UC8253 = uc8253_ns.class_("UC8253", display.DisplayBuffer)
 
 MODEL_ENUM = {
     "3.7": UC8253Model.UC8253_MODEL_3_7,
@@ -71,7 +71,7 @@ CONFIG_SCHEMA = (
 async def to_code(config):
     var = cg.new_Pvariable(config[CONF_ID])
 
-    # Don't call cg.register_component() here - PollingComponent already handles this
+    await cg.register_component(var, config)
     await display.register_display(var, config)
 
     cg.add(var.set_model(MODEL_ENUM[config[CONF_MODEL]]))

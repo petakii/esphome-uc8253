@@ -69,6 +69,8 @@ void UC8253::dump_config() {
 
 void UC8253::on_shutdown() { this->deep_sleep_(); }
 
+void UC8253::update() { this->display(); }
+
 int UC8253::get_width_internal() { return this->width_; }
 int UC8253::get_height_internal() { return this->height_; }
 
@@ -76,7 +78,7 @@ size_t UC8253::get_buffer_length() {
   return (static_cast<size_t>(this->width_) * this->height_ + 7u) / 8u;
 }
 
-void UC8253::draw_absolute_pixel_internal(int x, int y, display::Color color) {
+void UC8253::draw_absolute_pixel_internal(int x, int y, Color color) {
   if (x < 0 || y < 0 || x >= this->width_ || y >= this->height_)
     return;
 

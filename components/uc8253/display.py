@@ -63,7 +63,6 @@ CONFIG_SCHEMA = (
             cv.Optional(CONF_COLOR_MODE, default="2color"): validate_color_mode,
         }
     )
-    .extend(cv.polling_component_schema("30s"))
     .extend(cv.Schema({cv.Optional(CONF_LAMBDA): cv.returning_lambda}))
 )
 

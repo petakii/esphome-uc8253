@@ -70,7 +70,7 @@ CONFIG_SCHEMA = (
 async def to_code(config):
     var = cg.new_Pvariable(config[CONF_ID])
 
-    await cg.register_component(var, config)
+    # Only call display.register_display - it handles component registration
     await display.register_display(var, config)
 
     cg.add(var.set_model(MODEL_ENUM[config[CONF_MODEL]]))
